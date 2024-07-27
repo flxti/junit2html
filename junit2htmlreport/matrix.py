@@ -31,6 +31,8 @@ class ReportMatrix(ReportContainer):
     casenames: "Dict[str, List[str]]"
     result_stats: "Dict[CaseResult, int]"
     case_results: "Dict[str, Dict[str, List[CaseResult]]]"
+    stats_per_report: "Dict[str, Dict[CaseResult, int]]"
+    REPORT_STATS_CASES = (CaseResult.PASSED, CaseResult.FAILED, CaseResult.SKIPPED, CaseResult.ABSENT)
 
     def __init__(self):
         super(ReportMatrix, self).__init__()
@@ -39,6 +41,7 @@ class ReportMatrix(ReportContainer):
         self.casenames = {}
         self.result_stats = {}
         self.case_results = {}
+        self.stats_per_report = {}
 
     def add_case_result(self, case: "Case"):
         if case.testclass is None or case.testclass.name is None:
@@ -82,6 +85,8 @@ class ReportMatrix(ReportContainer):
         parsed = parser.Junit(filename=filename)
         filename = os.path.basename(filename)
         self.reports[filename] = parsed
+        if filename not in self.stats_per_report:
+            self.stats_per_report[filename] = {}
 
         for suite in parsed.suites:
             for testclass in suite.classes:
@@ -107,6 +112,7 @@ class ReportMatrix(ReportContainer):
 
                     self.result_stats[outcome] = 1 + self.result_stats.get(
                         outcome, 0)
+                    self.stats_per_report[filename][outcome] = 1 + self.stats_per_report[filename].get(outcome, 0)
 
     def summary(self) -> str:
         """
@@ -202,6 +208,8 @@ class TextReportMatrix(ReportMatrix):
     Render a matrix report as text
     """
 
+    COLUMN_WIDTH = 6
+
     def summary(self):
         """
         Render as a string
@@ -220,14 +228,16 @@ class TextReportMatrix(ReportMatrix):
             left_indent = max(len(classname), left_indent)
             for casename in self.casenames[classname]:
                 left_indent = max(len(casename), left_indent)
+        header_indent = left_indent - (len(self.REPORT_STATS_CASES) * (self.COLUMN_WIDTH+1) - 1)
 
-        # render the axis headings in a stepped tree
+        # render the axis headings in a stepped tree with stats overview for each report
+        output += " " * header_indent + " ".join("{:>6}".format(case.title()) for case in self.REPORT_STATS_CASES) + "\n"
         treelines = ""
         for filename in self.report_order():
-            output += "{}    {}{}\n".format(" " * left_indent, treelines,
-                                            filename)
+            output += " " * header_indent + " ".join("{:>6}".format(self.stats_per_report[filename].get(case, 0)) for case in self.REPORT_STATS_CASES)
+            output += "    {}{}\n".format(treelines, filename)
             treelines += "| "
-        output += "{}    {}\n".format(" " * left_indent, treelines)
+        output += "{}    {}\n".format(" " * (left_indent), treelines)
         # render in groups of the same class
 
         for classname in self.classes:
