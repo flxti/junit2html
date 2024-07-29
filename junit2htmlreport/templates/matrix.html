@@ -9,7 +9,7 @@
     {% set n_reports = report_names.__len__() %}
     {% if n_reports > 0 %}
     <tr><!-- top row, stats and each matrix axis -->
-        <td colspan="1" rowspan="{{n_reports + 2}}"> <!-- stats -->
+        <td colspan="1" rowspan="{{n_reports + 3}}"> <!-- stats -->
             <table class="stats-table">
                 {% for outcome in matrix.result_stats %}
                 <tr>
@@ -22,10 +22,18 @@
         <td colspan="{{n_reports + 1}}"></td>
 
     </tr>
+    {% for case in matrix.REPORT_STATS_CASES %}
+    <th>{{case.title()}}</th>
+    {% endfor %}
     {% endif %}
     <!-- matrix column index - {{report_names}} -->
     {% for i in range(n_reports) %}
     <tr>
+        {% for case in matrix.REPORT_STATS_CASES %}
+        <td colspan="1" class="matrix-axis-name {% if (n_reports - i) % 2 == 0 %}matrix-even{% endif %}">
+            {{matrix.stats_per_report[report_names[n_reports - 1 - i]].get(case, 0)}}
+        </td>
+        {% endfor %}
         <td colspan="{{n_reports + 1 - i}}" class="matrix-axis-name {% if (n_reports - i) % 2 == 0 %}matrix-even{% endif %}">
             <a href="{{report_names[n_reports - 1 - i]}}.html">{{matrix.short_axis(report_names[n_reports - 1 - i])}}</a>
         </td>
