@@ -14,7 +14,7 @@
     {% endfor %}
     -->
     <tr><!-- top row, stats and each matrix axis -->
-        <td colspan="1" rowspan="{{n_reports + 1}}"> <!-- stats -->
+        <td colspan="1" rowspan="{{n_reports + 2}}"> <!-- stats -->
             <table class="stats-table">
                 {% for outcome in matrix.result_stats %}
                 <tr>
@@ -25,13 +25,11 @@
             </table>
         </td>
 
-        <td align="right" colspan="1" rowspan="{{n_reports + 1}}"> <!-- stats -->
+        <td align="right" colspan="1" rowspan="{{n_reports + 2}}"> <!-- stats -->
             <table class="stats-table" style="border-spacing: none; border-collapse: collapse; border: 1px solid black;">
-                <!--
                 {% for case in matrix.REPORT_STATS_CASES %}
                 <th>{{case.title()}}</th>
                 {% endfor %}
-                -->
                 {% for i in range(n_reports) %}
                 <tr>
                     {% for case in matrix.REPORT_STATS_CASES %}
@@ -48,6 +46,9 @@
     </tr>
     {% endif %}
     <!-- matrix column index - {{report_names}} -->
+    <tr>
+        <td colspan="1">&nbsp;</td>
+    </tr>
     {% for i in range(n_reports) %}
     <tr>
         <td colspan="{{n_reports + 1 - i}}" class="matrix-axis-name {% if (n_reports - i) % 2 == 0 %}matrix-even{% endif %}">
